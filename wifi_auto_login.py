@@ -1,13 +1,19 @@
 import requests
 import time
 import os
+from dotenv import load_dotenv
 
-#LOGIN_URL = "http://phc.prontonetworks.com/cgi-bin/authlogin" #DNS Failed so using IP
-LOGIN_URL = "http://172.16.1.1/cgi-bin/authlogin"
+# Load .env file
+load_dotenv()
 
-# 🔐 Get credentials securely from environment variables
+# 🔐 Get credentials
 USER_ID = os.getenv("WIFI_USER")
 PASSWORD = os.getenv("WIFI_PASS")
+
+# 🌐 Configurable settings
+LOGIN_URL = os.getenv("LOGIN_URL", "http://172.16.1.1/cgi-bin/authlogin")
+URI = os.getenv("WIFI_URI", "http://example.com")
+SERVICE_NAME = os.getenv("SERVICE_NAME", "ProntoAuthentication")
 
 if not USER_ID or not PASSWORD:
     print("❌ ERROR: WIFI_USER or WIFI_PASS not set!")
@@ -16,20 +22,14 @@ if not USER_ID or not PASSWORD:
 DATA = {
     "userId": USER_ID,
     "password": PASSWORD,
-    "serviceName": "ProntoAuthentication",
-    "URI": "http://example.com"
+    "serviceName": SERVICE_NAME,
+    "URI": URI
 }
 
 def check_internet():
     try:
         response = requests.get("http://clients3.google.com/generate_204", timeout=5)
-
-        # Real internet returns 204 (No Content)
-        if response.status_code == 204:
-            return True
-        else:
-            return False
-
+        return response.status_code == 204
     except:
         return False
 
@@ -41,26 +41,32 @@ def login():
             "User-Agent": "Mozilla/5.0"
         }
 
-        # ⏳ Wait for WiFi to stabilize
         print("⏳ Waiting for network...")
         time.sleep(5)
 
-        # Step 1: Try opening login page (retry if DNS fails)
+        # 🔁 Retry opening login page (clean handling)
+        success = False
+
         for i in range(5):
             try:
                 session.get(
-                    "http://phc.prontonetworks.com/cgi-bin/authlogin?URI=http://www.msftconnecttest.com/redirect",
+                    f"{LOGIN_URL}?URI={URI}",
                     headers=headers,
                     timeout=5
                 )
+                success = True
                 break
             except:
                 print(f"🔁 Retry {i+1}/5...")
                 time.sleep(2)
 
+        if not success:
+            print("⚠️ Network not ready, will retry later")
+            return
+
         # Step 2: Send login POST
         response = session.post(
-            "http://phc.prontonetworks.com/cgi-bin/authlogin",
+            LOGIN_URL,
             data=DATA,
             headers=headers,
             timeout=5
