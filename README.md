@@ -1,5 +1,11 @@
 # 🚀 WiFi Auto Login System
 
+![Python](https://img.shields.io/badge/Python-3.x-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Status](https://img.shields.io/badge/Status-Active-success)
+![Platform](https://img.shields.io/badge/Platform-Windows-blue)
+![Automation](https://img.shields.io/badge/Automation-WiFi%20Login-orange)
+
 Automates login for captive portal WiFi networks (e.g., college/hostel WiFi).
 
 Once set up, your system will automatically log in whenever internet access is required — no manual intervention needed.
